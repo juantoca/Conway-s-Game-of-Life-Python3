@@ -1,4 +1,4 @@
-# Conway's Game of Life Python3.0
+# Conway's Game of Life Python3
 
 <b>What's this?</b>
 
