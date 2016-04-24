@@ -1,5 +1,5 @@
 import shutil
-import NucleoExp as Nucleo
+import Nucleo
 
 
 class Interfaz:
