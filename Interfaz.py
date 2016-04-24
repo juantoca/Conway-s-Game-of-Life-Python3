@@ -1,5 +1,5 @@
 import shutil
-import Nucleo as Nucleolo
+import Nucleo
 
 
 class Interfaz:
