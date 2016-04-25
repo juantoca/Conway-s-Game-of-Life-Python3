@@ -25,31 +25,26 @@ class Mundo:  # Clase que maneja el juego
         while salir != self.limite:
             if self.print_during is True and self.interfaz is not None:
                 self.interfaz.run(self.cells)
-            if self.debugging is True:
-                tiempo = time.time()
             self.refresher()
-            if self.debugging is True:
-                print("Tiempo del loop " + str(salir) + ":" + str(time.time() - tiempo))
             if self.tiempo > 0:
                 time.sleep(self.tiempo)
             self.toBorn = []
             salir += 1
         self.final(tiempoinicial, salir)
 
-    def final(self, tiempo, loops):
+    def final(self, tiempo, loops):  # Final del juego
         if self.debugging is True:
-            print("Tiempo total: " + str(time.time() - tiempo))
-        if self.debugging is True:
+            tiempo = time.time() - tiempo
+            print("Tiempo total: " + str(tiempo))
+            print("Media por loop: " + str(tiempo/loops))
             celulas = len(self.cells)
-            print(str(loops) + "    " + str(celulas))
-        if self.debugging is True:
-            print(self.cells)
+            print("Loops:" + str(loops) + "\nCelulas vivas: " + str(celulas))
         if self.interfaz is not None:
             self.interfaz.run(self.cells)
 
     def builder(self, lista):  # Guarda las coordenadas de las células que deben nacer en el diccionario
         for x in lista:
-            if x not in self.cells.items():
+            if x not in self.cells:
                 self.cells[x] = None
 
     def refresher(self):  # Refresca la situación de las células
