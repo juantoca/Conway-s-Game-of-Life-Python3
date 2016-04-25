@@ -21,7 +21,7 @@ class Mundo:  # Clase que maneja el juego
 
     def run(self):  # LOOP DEL JUEGO
         salir = 0
-        celulas = len(self.cells)
+        tiempoinicial = time.time()
         while salir != self.limite:
             if self.print_during is True and self.interfaz is not None:
                 self.interfaz.run(self.cells)
@@ -35,6 +35,9 @@ class Mundo:  # Clase que maneja el juego
             self.toBorn = []
             salir += 1
         if self.debugging is True:
+            print("Tiempo total: " + str(time.time() - tiempoinicial))
+        if self.debugging is True:
+            celulas = len(self.cells)
             print(str(salir) + "    " + str(celulas))
         if self.debugging is True:
             print(self.cells)

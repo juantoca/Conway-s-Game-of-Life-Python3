@@ -102,12 +102,7 @@ class Archivos:
 
 
 def main():
-    archivos = Archivos()
-    archivos.load()
-    cells = archivos.load()
     interfaz = Interfaz()
-    # interfaz.inicio()
-    mundo = Nucleo.Mundo(coordinates=cells, interfaz=interfaz, limite=2000, print_during=False, debugging=True)
-    mundo.run()
+    interfaz.inicio()
 
 main()
