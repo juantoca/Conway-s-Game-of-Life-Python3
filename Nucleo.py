@@ -34,11 +34,14 @@ class Mundo:  # Clase que maneja el juego
                 time.sleep(self.tiempo)
             self.toBorn = []
             salir += 1
+        self.final(tiempoinicial, salir)
+
+    def final(self, tiempo, loops):
         if self.debugging is True:
-            print("Tiempo total: " + str(time.time() - tiempoinicial))
+            print("Tiempo total: " + str(time.time() - tiempo))
         if self.debugging is True:
             celulas = len(self.cells)
-            print(str(salir) + "    " + str(celulas))
+            print(str(loops) + "    " + str(celulas))
         if self.debugging is True:
             print(self.cells)
         if self.interfaz is not None:
@@ -66,7 +69,7 @@ class Mundo:  # Clase que maneja el juego
     def adjacent_life(self, square):  # Cuenta las células vivas alrededor de una casilla
         counter = 0
         for x in self.variacion:
-            if (square[0] + x[0], square[1] + x[1]) in self.cells.keys():
+            if (square[0] + x[0], square[1] + x[1]) in self.cells:
                 counter += 1
         return counter
 
