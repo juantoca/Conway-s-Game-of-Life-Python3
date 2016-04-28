@@ -14,6 +14,7 @@ class Mundo:  # Clase que maneja el juego
         self.cells = {}
         self.toBorn = []
         self.toKill = []
+        self.analized = {}
         self.limite = limite
         self.tiempo = tiempo
         self.print_during = print_during
@@ -35,12 +36,14 @@ class Mundo:  # Clase que maneja el juego
     def final(self, tiempo, loops):  # Final del juego
         if self.debugging is True:
             tiempo = time.time() - tiempo
+            celulas = len(self.cells)
             print("Tiempo total: " + str(tiempo))
             print("Media por loop: " + str(tiempo/loops))
-            celulas = len(self.cells)
+            print("Loops por segundo: " + str(loops/tiempo))
             print("Loops:" + str(loops) + "\nCelulas vivas: " + str(celulas))
         if self.interfaz is not None:
             self.interfaz.run(self.cells)
+        return self.cells
 
     def builder(self, lista):  # Guarda las coordenadas de las células que deben nacer en el diccionario
         for x in lista:
@@ -53,6 +56,7 @@ class Mundo:  # Clase que maneja el juego
         self.builder(self.toBorn)
         self.toBorn = []
         self.kill()
+        self.analized = {}
 
     def kill(self):  # Borra del diccionario las células que deben morir
         for x in self.toKill:
@@ -76,8 +80,10 @@ class Mundo:  # Clase que maneja el juego
         self.survivality(coordinates)
         for x in self.variacion:
             coordenadas = (x[0] + coordinates[0], x[1] + coordinates[1])
-            if self.adjacent_life(coordenadas) == 3:
-                self.toBorn.append(coordenadas)
+            if coordenadas not in self.analized:
+                if self.adjacent_life(coordenadas) == 3:
+                    self.toBorn.append(coordenadas)
+                self.analized[coordenadas] = None
 
 
 def main():
