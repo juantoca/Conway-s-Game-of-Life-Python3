@@ -1,4 +1,5 @@
 import time
+"""Processing engine for Conway's Game of Life"""
 
 
 class Mundo:  # Clase que maneja el juego
