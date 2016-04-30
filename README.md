@@ -26,4 +26,4 @@ We have a grid(in the case of my program, it haven't got a limit) in which each 
 
 On this example, black tiles represents living ones and is one of the most famous patterns(Gosper's glider gun)
 
-For farther riding, the game has a <a href=http://www.conwaylife.com/wiki/Main_Page>wiki</a>
+For farther reading, the game has a <a href=http://www.conwaylife.com/wiki/Main_Page>wiki</a>
