@@ -27,11 +27,12 @@ class Interfaz:
             limite = self.limite()
             mundo = Nucleo.Mundo(coordinates=archivos.load(), interfaz=self, tiempo=tiempo,
                                  limite=limite, print_during=True)
-            mundo.run()
+            self.result = mundo.run()
         elif respuesta == "2":
             limite = self.limite()
             mundo = Nucleo.Mundo(coordinates=archivos.load(), limite=limite, debugging=True)
-            mundo.run()
+            self.result = mundo.run()
+        self.final()
 
     def limite(self):
         limite = None
@@ -50,15 +51,15 @@ class Interfaz:
                   int(self.terminal_size.lines / 2 - self.center[1]))
         return corner
 
-    def prepare_map(self, cells):  # Prepara el mapa para pasarse por pantalla
+    def prepare_map(self, cells, living="#", death = " "):  # Prepara el mapa para pasarse por pantalla
         mapa = ""
         counter = list(self.top_left_corner)
         salir = False
         while salir is False:
             if tuple(counter) in cells.keys():
-                mapa += "#"
+                mapa += living
             else:
-                mapa += " "
+                mapa += death
             if counter[0] == self.top_left_corner[0] + self.terminal_size.columns:
                 mapa += "\n"
                 counter[1] -= 1
@@ -70,6 +71,10 @@ class Interfaz:
 
     def run(self, cells):  # Pasa por pantalla el mapa
         print(self.prepare_map(cells))
+
+    def final(self):
+        print("celulas: " + str(len(self.result["celulas"])))
+        print("tiempo: " + str(self.result["tiempo"]))
 
 
 class Archivos:
