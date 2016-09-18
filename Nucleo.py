@@ -18,15 +18,15 @@ class Mundo:  # Clase que maneja el juego
         self.tiempo = tiempo
         self.print_during = print_during
         self.builder(self.coordinates)
-        self.pool = multiprocessing.Pool(multiprocessing.cpu_count())
 
     def run(self):  # LOOP DEL JUEGO
         salir = 0
         tiempoinicial = time.time()
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
         while salir != self.limite:
             if self.print_during is True and self.interfaz is not None:
                 self.interfaz.run(self.cells)
-            self.refresher()
+            self.refresher(pool)
             if self.tiempo > 0:
                 time.sleep(self.tiempo)
             salir += 1
@@ -45,10 +45,10 @@ class Mundo:  # Clase que maneja el juego
             if x not in self.cells:
                 self.cells[x] = None
 
-    def refresher(self):  # Refresca la situación de las células
+    def refresher(self, pool):  # Refresca la situación de las células
         toborn = []
         todie = []
-        results = self.pool.map(self.refresh, self.cells.keys())
+        results = pool.map(self.refresh, self.cells.keys())
         for x in results:
             for y in x[0]:
                 toborn.append(y)
