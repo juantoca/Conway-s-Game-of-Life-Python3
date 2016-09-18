@@ -8,9 +8,9 @@ class Interfaz:
         self.center = center
         self.terminal_size = shutil.get_terminal_size()
         self.top_left_corner = self.get_corner()
+        self.archivos = Archivos(self)
 
     def inicio(self):
-        archivos = Archivos()
         print("Bienvenido al Juego de la Vida")
         print("Idea original de John Conway")
         respuesta = ""
@@ -25,12 +25,12 @@ class Interfaz:
                 except ValueError:
                     pass
             limite = self.limite()
-            mundo = Nucleo.Mundo(coordinates=archivos.load(), interfaz=self, tiempo=tiempo,
+            mundo = Nucleo.Mundo(coordinates=self.archivos.load(), interfaz=self, tiempo=tiempo,
                                  limite=limite, print_during=True)
             self.result = mundo.run()
         elif respuesta == "2":
             limite = self.limite()
-            mundo = Nucleo.Mundo(coordinates=archivos.load(), limite=limite, debugging=True)
+            mundo = Nucleo.Mundo(coordinates=self.archivos.load(), limite=limite, debugging=True)
             self.result = mundo.run()
         self.final()
 
@@ -51,7 +51,7 @@ class Interfaz:
                   int(self.terminal_size.lines / 2 - self.center[1]))
         return corner
 
-    def prepare_map(self, cells, living="#", death = " "):  # Prepara el mapa para pasarse por pantalla
+    def prepare_map(self, cells, living="#", death=" "):  # Prepara el mapa para pasarse por pantalla
         mapa = ""
         counter = list(self.top_left_corner)
         salir = False
@@ -75,13 +75,15 @@ class Interfaz:
     def final(self):
         print("celulas: " + str(len(self.result["celulas"])))
         print("tiempo: " + str(self.result["tiempo"]))
+        self.archivos.save()
 
 
 class Archivos:
 
-    def __init__(self, rutainput="./mapa.txt", rutaoutput="./output.txt"):
+    def __init__(self, interfaz, rutainput="./mapa.txt", rutaoutput="./output.txt"):
         self.rutainput = rutainput
         self.rutaoutput = rutaoutput
+        self.interfaz = interfaz
 
     def load(self):
         cells = []
@@ -104,6 +106,38 @@ class Archivos:
                     counterx += 1
                 countery -= 1
         return cells
+
+    def save(self):
+        cells = self.interfaz.result["celulas"]
+        top_right_corner = (0, 0)
+        bot_left_corner = (0, 0)
+        returneo = ""
+        for coords in cells.keys():
+            x = coords[0]
+            y = coords[1]
+            if x > top_right_corner[0]:
+                top_right_corner = (x, top_right_corner[1])
+            elif x < bot_left_corner[0]:
+                bot_left_corner = (x, bot_left_corner[1])
+            if y > top_right_corner[1]:
+                top_right_corner = (top_right_corner[0], y)
+            elif y < bot_left_corner[1]:
+                bot_left_corner = (bot_left_corner[0], y)
+        counterx = bot_left_corner[0]
+        countery = top_right_corner[1]
+        while countery >= bot_left_corner[1]:
+            while counterx <= top_right_corner[0]:
+                coords = (counterx, countery)
+                if coords in cells:
+                    returneo += "O"
+                else:
+                    returneo += "."
+                counterx += 1
+            counterx = 0
+            returneo += "\n"
+            countery -= 1
+        with open(self.rutainput, "w") as arch:
+            arch.write(returneo)
 
 
 def main():
