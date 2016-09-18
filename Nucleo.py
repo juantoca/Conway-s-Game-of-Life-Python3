@@ -3,7 +3,7 @@ import multiprocessing
 """Processing engine for Conway's Game of Life"""
 
 
-# Multithreading only makes itself useful on long numbers of cells(else)
+# Multithreading only makes itself useful on long numbers of cells
 
 
 class Mundo:  # Clase que maneja el juego
