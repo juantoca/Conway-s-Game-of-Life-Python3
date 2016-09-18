@@ -46,7 +46,6 @@ class Mundo:  # Clase que maneja el juego
                 self.cells[x] = None
 
     def refresher(self, pool):  # Refresca la situación de las células
-        tiempo = time.time()
         toborn = []
         todie = []
         results = pool.map(self.refresh, self.cells.keys())
@@ -57,8 +56,6 @@ class Mundo:  # Clase que maneja el juego
                 todie.append(z)
         self.builder(toborn)
         self.kill(todie)
-        tiempo = time.time() - tiempo
-        print(tiempo)
 
     def kill(self, lista):  # Borra del diccionario las células que deben morir
         for x in lista:
