@@ -1,5 +1,9 @@
 import time
+import multiprocessing
 """Processing engine for Conway's Game of Life"""
+
+
+# Multithreading only makes itself useful on long numbers of cells
 
 
 class Mundo:  # Clase que maneja el juego
@@ -13,9 +17,6 @@ class Mundo:  # Clase que maneja el juego
         self.center = center
         self.coordinates = coordinates
         self.cells = {}
-        self.toBorn = []
-        self.toKill = []
-        self.analized = {}
         self.limite = limite
         self.tiempo = tiempo
         self.print_during = print_during
@@ -24,47 +25,46 @@ class Mundo:  # Clase que maneja el juego
     def run(self):  # LOOP DEL JUEGO
         salir = 0
         tiempoinicial = time.time()
+        pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
         while salir != self.limite:
             if self.print_during is True and self.interfaz is not None:
                 self.interfaz.run(self.cells)
-            self.refresher()
-            if self.tiempo > 0:
+            self.refresher(pool)
+            if self.interfaz and self.tiempo > 0:
                 time.sleep(self.tiempo)
-            self.toBorn = []
             salir += 1
-        self.final(tiempoinicial, salir)
+        result = self.final(tiempoinicial, salir)
+        return result
 
     def final(self, tiempo, loops):  # Final del juego
         if self.debugging is True:
             tiempo = time.time() - tiempo
-            celulas = len(self.cells)
-            print("Tiempo total: " + str(tiempo))
-            print("Media por loop: " + str(tiempo/loops))
-            print("Loops por segundo: " + str(loops/tiempo))
-            print("Loops:" + str(loops) + "\nCelulas vivas: " + str(celulas))
         if self.interfaz is not None:
             self.interfaz.run(self.cells)
-        return self.cells
+        return {"celulas": self.cells, "tiempo": tiempo, "loops": loops}
 
     def builder(self, lista):  # Guarda las coordenadas de las células que deben nacer en el diccionario
         for x in lista:
             if x not in self.cells:
                 self.cells[x] = None
 
-    def refresher(self):  # Refresca la situación de las células
-        for x in self.cells.keys():
-            self.refresh(x)
-        self.builder(self.toBorn)
-        self.toBorn = []
-        self.kill()
-        self.analized = {}
+    def refresher(self, pool):  # Refresca la situación de las células
+        toborn = []
+        todie = []
+        results = pool.map(self.refresh, self.cells.keys())
+        for x in results:
+            for y in x[0]:
+                toborn.append(y)
+            for z in x[1]:
+                todie.append(z)
+        self.builder(toborn)
+        self.kill(todie)
 
-    def kill(self):  # Borra del diccionario las células que deben morir
-        for x in self.toKill:
+    def kill(self, lista):  # Borra del diccionario las células que deben morir
+        for x in lista:
             objecto = self.cells[x]
             del objecto
             del self.cells[x]
-        self.toKill = []
 
     def adjacent_life(self, square):  # Cuenta las células vivas alrededor de una casilla
         counter = 0
@@ -74,17 +74,19 @@ class Mundo:  # Clase que maneja el juego
         return counter
 
     def survivality(self, coordinates):  # Detecta si la célula sobrevive o muere
+        tokill = []
         if self.adjacent_life(coordinates) > 3 or self.adjacent_life(coordinates) < 2:
-            self.toKill.append(coordinates)
+            tokill.append(coordinates)
+        return tokill
 
     def refresh(self, coordinates):  # Refresca la situación de una coordenada
-        self.survivality(coordinates)
+        toborn = []
+        todie = self.survivality(coordinates)
         for x in self.variacion:
             coordenadas = (x[0] + coordinates[0], x[1] + coordinates[1])
-            if coordenadas not in self.analized:
-                if self.adjacent_life(coordenadas) == 3:
-                    self.toBorn.append(coordenadas)
-                self.analized[coordenadas] = None
+            if self.adjacent_life(coordenadas) == 3:
+                toborn.append(coordenadas)
+        return [toborn, todie]
 
 
 def main():
