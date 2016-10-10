@@ -92,7 +92,7 @@ class Archivos:
             lineas = archivo.split("\n")
             counter = 0
             for x in lineas:
-                if x[0] == "!":
+                if x == "" or x[0] == "!":
                     lineas.pop(counter)
                 counter += 1
             ylen = len(lineas)
@@ -108,6 +108,7 @@ class Archivos:
         return cells
 
     def save(self):
+        print("Guardando...")
         cells = self.interfaz.result["celulas"]
         top_right_corner = (0, 0)
         bot_left_corner = (0, 0)
@@ -136,7 +137,7 @@ class Archivos:
             counterx = 0
             returneo += "\n"
             countery -= 1
-        with open(self.rutainput, "w") as arch:
+        with open(self.rutaoutput, "w") as arch:
             arch.write(returneo)
 
 

@@ -3,7 +3,7 @@ import multiprocessing
 """Processing engine for Conway's Game of Life"""
 
 
-# Multithreading only makes itself useful on long numbers of cells
+# El multithreading solo mejora el rendimiento en cálculos grandes
 
 
 class Mundo:  # Clase que maneja el juego
@@ -21,6 +21,8 @@ class Mundo:  # Clase que maneja el juego
         self.tiempo = tiempo
         self.print_during = print_during
         self.builder(self.coordinates)
+        manager = multiprocessing.Manager()
+        self.analizados = manager.dict()
 
     def run(self):  # LOOP DEL JUEGO
         salir = 0
@@ -30,6 +32,7 @@ class Mundo:  # Clase que maneja el juego
             if self.print_during is True and self.interfaz is not None:
                 self.interfaz.run(self.cells)
             self.refresher(pool)
+            self.analizados = {}
             if self.interfaz and self.tiempo > 0:
                 time.sleep(self.tiempo)
             salir += 1
@@ -69,7 +72,8 @@ class Mundo:  # Clase que maneja el juego
     def adjacent_life(self, square):  # Cuenta las células vivas alrededor de una casilla
         counter = 0
         for x in self.variacion:
-            if (square[0] + x[0], square[1] + x[1]) in self.cells:
+            coordinates = (square[0] + x[0], square[1] + x[1])
+            if coordinates in self.cells:
                 counter += 1
         return counter
 
@@ -84,12 +88,13 @@ class Mundo:  # Clase que maneja el juego
         todie = self.survivality(coordinates)
         for x in self.variacion:
             coordenadas = (x[0] + coordinates[0], x[1] + coordinates[1])
-            if self.adjacent_life(coordenadas) == 3:
+            if self.adjacent_life(coordenadas) == 3 and coordenadas not in self.analizados:
+                self.analizados[coordenadas] = None
                 toborn.append(coordenadas)
         return [toborn, todie]
 
 
-def main():
+def main():     # MAIN
     coordenadas = [(0, 0), (1, 0), (-1, 0)]
     mundo = Mundo(coordinates=coordenadas, limite=200000, debugging=True)
     mundo.run()
