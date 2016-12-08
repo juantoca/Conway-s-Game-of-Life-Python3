@@ -47,10 +47,6 @@ class Interfaz:
                 pass
         self.limite = limite
 
-    def run(self, estado):
-        if self.printear:
-            self.printea(estado["cells"])
-
     def control(self):
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         tiempo_inicial = time.time()
