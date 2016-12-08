@@ -1,14 +1,20 @@
 import shutil
 import Nucleo
-
+import multiprocessing
+import time
 
 class Interfaz:
 
     def __init__(self, center=(0, 0)):
+        self.archivos = Archivos()
+        self.altura = shutil.get_terminal_size().lines
+        self.anchura = shutil.get_terminal_size().columns
+        self.mundo = Nucleo.Mundo(coordinates=self.archivos.load())
+        self.printear = False
+        self.limite = 0
+        self.tiempo = 0
         self.center = center
-        self.terminal_size = shutil.get_terminal_size()
-        self.top_left_corner = self.get_corner()
-        self.archivos = Archivos(self)
+        self.diagonal = self.get_diagonal()  # [0]top_left, [1]bot_rigth
 
     def inicio(self):
         print("Bienvenido al Juego de la Vida")
@@ -17,24 +23,20 @@ class Interfaz:
         while respuesta not in ("1", "2"):
             respuesta = input("\n\nElija el modo:\n1-Gráfico\n2-Solo cálculo\n[1/2]-->")
         if respuesta == "1":
+            self.printear = True
             tiempo = None
             while tiempo is None:
                 respuesta1 = input("Elija el tiempo entre ciclos\n-->")
                 try:
                     tiempo = float(respuesta1)
+                    self.tiempo = tiempo
                 except ValueError:
                     pass
-            limite = self.limite()
-            mundo = Nucleo.Mundo(coordinates=self.archivos.load(), interfaz=self, tiempo=tiempo,
-                                 limite=limite, print_during=True)
-            self.result = mundo.run()
-        elif respuesta == "2":
-            limite = self.limite()
-            mundo = Nucleo.Mundo(coordinates=self.archivos.load(), limite=limite, debugging=True)
-            self.result = mundo.run()
-        self.final()
+            self.printear = True
+        self.limit()
+        self.control()
 
-    def limite(self):
+    def limit(self):
         limite = None
         while limite is None:
             respuesta2 = input("Elija el limite de ciclos(números negativos = ciclos infinitos)"
@@ -43,51 +45,54 @@ class Interfaz:
                 limite = int(respuesta2)
             except ValueError:
                 pass
-        return limite
+        self.limite = limite
 
-    def get_corner(self):  # Consigue la esquina superior izquierda respecto al centro
-                            # y las dimensiones de la terminal
-        corner = (int(-self.terminal_size.columns / 2 - self.center[0]),
-                  int(self.terminal_size.lines / 2 - self.center[1]))
-        return corner
+    def run(self, estado):
+        if self.printear:
+            self.printea(estado["cells"])
 
-    def prepare_map(self, cells, living="#", death=" "):  # Prepara el mapa para pasarse por pantalla
+    def control(self):
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        tiempo_inicial = time.time()
+        resultados = {}
+        for x in range(self.limite):
+            resultados = self.mundo.run(pool)
+            if self.printear:
+                self.printea(resultados["cells"])
+            tiempo = self.tiempo - time.time() - tiempo_inicial
+            if tiempo > 0:
+                time.sleep(tiempo)
+        print("Tiempo total: " + str(time.time() - tiempo_inicial))
+        print("Número de células: " + str(len(resultados["cells"])))
+
+    def printea(self, cells, living="#", dead=" "):
         mapa = ""
-        counter = list(self.top_left_corner)
-        salir = False
-        while salir is False:
-            if tuple(counter) in cells.keys():
+        top = self.diagonal[0]
+        bot = self.diagonal[1]
+        coordinates = top
+        while coordinates != bot:
+            if coordinates in cells:
                 mapa += living
             else:
-                mapa += death
-            if counter[0] == self.top_left_corner[0] + self.terminal_size.columns:
+                mapa += dead
+            if coordinates[0] == bot[0]:  # Saltamos a la siguiente línea
+                coordinates = (top[0], coordinates[1]-1)
                 mapa += "\n"
-                counter[1] -= 1
-                counter[0] = self.top_left_corner[0]
-            if tuple(counter) == (self.top_left_corner[0], self.top_left_corner[1] - self.terminal_size.lines):
-                salir = True
-            counter[0] += 1
-        return mapa
+            else:  # Avanzamos un carácter
+                coordinates = (coordinates[0]+1, coordinates[1])
+        print(mapa)
 
-    def run(self, cells):  # Pasa por pantalla el mapa
-        print(self.prepare_map(cells))
-
-    def final(self):
-        print("celulas: " + str(len(self.result["celulas"])))
-        print("tiempo: " + str(self.result["tiempo"]))
-        self.archivos.save()
+    def get_diagonal(self):
+        top = (- self.anchura/2 + self.center[0], self.altura/2 - self.center[1])
+        bot = (self.anchura/2 + self.center[0], self.center[1] - self.altura/2)
+        return top, bot
 
 
 class Archivos:
 
-    def __init__(self, interfaz, rutainput="./mapa.txt", rutaoutput="./output.txt"):
-        self.rutainput = rutainput
-        self.rutaoutput = rutaoutput
-        self.interfaz = interfaz
-
-    def load(self):
+    def load(self, arch="./mapa.txt"):
         cells = []
-        with open(self.rutainput, "r") as arch:
+        with open(arch, "r") as arch:
             archivo = arch.read()
             lineas = archivo.split("\n")
             counter = 0
@@ -107,42 +112,6 @@ class Archivos:
                 countery -= 1
         return cells
 
-    def save(self):
-        print("Guardando...")
-        cells = self.interfaz.result["celulas"]
-        top_right_corner = (0, 0)
-        bot_left_corner = (0, 0)
-        returneo = ""
-        for coords in cells.keys():
-            x = coords[0]
-            y = coords[1]
-            if x > top_right_corner[0]:
-                top_right_corner = (x, top_right_corner[1])
-            elif x < bot_left_corner[0]:
-                bot_left_corner = (x, bot_left_corner[1])
-            if y > top_right_corner[1]:
-                top_right_corner = (top_right_corner[0], y)
-            elif y < bot_left_corner[1]:
-                bot_left_corner = (bot_left_corner[0], y)
-        counterx = bot_left_corner[0]
-        countery = top_right_corner[1]
-        while countery >= bot_left_corner[1]:
-            while counterx <= top_right_corner[0]:
-                coords = (counterx, countery)
-                if coords in cells:
-                    returneo += "O"
-                else:
-                    returneo += "."
-                counterx += 1
-            counterx = 0
-            returneo += "\n"
-            countery -= 1
-        with open(self.rutaoutput, "w") as arch:
-            arch.write(returneo)
-
-
-def main():
+if __name__ == "__main__":
     interfaz = Interfaz()
     interfaz.inicio()
-
-main()
