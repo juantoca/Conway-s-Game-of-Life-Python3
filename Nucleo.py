@@ -39,23 +39,23 @@ class Mundo:  # Clase que maneja el juego
         self.builder(coordinates)
         self.rules = rules
 
-    def builder(self, coordinates):  # RECREA el diccionario y lo llena con las coordenadas dadas
+    def builder(self, coordinates):  # Inserta en el diccionario las coordenadas dadas
         for x in coordinates:
             self.cells[x] = None
 
     def run(self, pool):  # Pasa un ciclo y devuelve el estado del mapa
                     # y otra información de debugging en un diccionario
         tiempo_inicial = time.time()
-        self.bucle(pool)
+        self.procesos(pool)
         tiempo_final = time.time() - tiempo_inicial
         return {"time": tiempo_final, "cells": self.cells}
 
-    def bucle(self, pool):  # LOOP DEL JUEGO
+    def procesos(self, pool):  # Método que se encarga de repartir el trabajo a los procesos
             claves = self.cells.keys()
             coordenadas = pool.map(self.analisis, claves)
             self.cells = {}
-            for y in coordenadas:
-                self.builder(y)
+            for x in coordenadas:
+                self.builder(x)
 
     def analisis(self, coordinates):  # Función que refresca la situación
                                         # de una región del mapa en función  de unas coordenadas
