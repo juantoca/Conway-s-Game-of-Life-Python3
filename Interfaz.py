@@ -8,8 +8,8 @@ class Interfaz:
 
     def __init__(self, center=(0, 0)):
         self.archivos = Archivos()
-        self.altura = shutil.get_terminal_size().lines
-        self.anchura = shutil.get_terminal_size().columns
+        self.altura = shutil.get_terminal_size().lines - 2
+        self.anchura = shutil.get_terminal_size().columns - 2
         self.carga = self.cargar()  # [0]carga, [1]descarga
         self.mundo = Nucleo.Mundo(coordinates=self.archivos.load(self.carga[0]))
         self.printear = False
@@ -87,15 +87,14 @@ class Interfaz:
                 mapa += dead
             if coordinates[0] == bot[0]:  # Saltamos a la siguiente línea
                 coordinates = (top[0], coordinates[1]-1)
+                mapa += "\n"
             else:  # Avanzamos un carácter
                 coordinates = (coordinates[0]+1, coordinates[1])
-                if coordinates[0] == top[0]:
-                    mapa += "\n"
         print(mapa)
 
     def get_diagonal(self):
-        top = (- self.anchura/2 + self.center[0], self.altura/2 - self.center[1])
-        bot = (self.anchura/2 + self.center[0], self.center[1] - self.altura/2)
+        top = (int(- self.anchura/2 + self.center[0]), int(self.altura/2 - self.center[1]))
+        bot = (int(self.anchura/2 + self.center[0]), int(self.center[1] - self.altura/2))
         return top, bot
 
 
