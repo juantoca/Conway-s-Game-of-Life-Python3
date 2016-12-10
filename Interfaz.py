@@ -58,7 +58,8 @@ class Interfaz:
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         tiempo_inicial = time.time()
         resultados = {}
-        for x in range(self.limite):
+        contador = 0
+        while contador != self.limite:
             tiempo_ciclo = time.time()
             resultados = self.mundo.run(pool)
             if self.printear:
@@ -66,6 +67,7 @@ class Interfaz:
             tiempo = self.tiempo - (time.time() - tiempo_ciclo)
             if tiempo > 0:
                 time.sleep(tiempo)
+            contador += 1
         tiempo = time.time() - tiempo_inicial
         print("Tiempo total: " + str(tiempo))
         print("Número de células: " + str(len(resultados["cells"])))
